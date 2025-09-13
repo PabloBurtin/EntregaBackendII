@@ -4,7 +4,7 @@
         {{#if error}}
             <div class="alert">¡El login fallo! Revisa tus credenciales</div>
         {{/if}}
-        <form method="POST" action="/api/users/login">
+        <form method="POST" action="/api/session/login">
             <input name="email" placeholder="Email" type="email" required/>
             <input name="password" placeholder="Contraseña" type="password" required/>
             <button type="submit">Ingresar</button>

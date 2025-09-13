@@ -1,20 +1,12 @@
 import { Router } from "express";
 import { passportAuth } from "../middlewares/passportAuth.js";
+import { loginUser, logoutUser, getCurrentUser } from "../controllers/session.controller.js";
 import User from "../models/user.model.js";
 
 const sessionRouter = Router();
 
-sessionRouter.get('/current', passportAuth('jwt'), async (req, res) => {
-    const user = await User.findById (req.user._id).lean()
-    res.render('current', { user })
-}) 
-
-sessionRouter.get('/logout', (req, res) => {
-      res.clearCookie('currentUser', {
-        httpOnly: true,
-        signed: true
-    })
-    res.render('logout')
-})
+sessionRouter.post("/login", loginUser)
+sessionRouter.post('/logout', logoutUser)
+sessionRouter.get('/current', passportAuth('jwt'), getCurrentUser) 
 
 export default sessionRouter

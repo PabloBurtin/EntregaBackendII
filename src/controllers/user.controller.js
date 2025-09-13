@@ -1,28 +1,7 @@
 import User from "../models/user.model.js";
 import { generateToken } from "../utils/jwt.js";
-import { createHash, isValidPassword } from "../utils/hash.js";
+import { createHash } from "../utils/hash.js";
 
-export async function loginUser(req, res) {
-    
-    //como se logea
-    const { email, password } = req.body
-    const user = await User.findOne({email})
-    console.log('User found:', user)
-    if(!user || !isValidPassword(password, user.password)){
-        console.log('Invalid credentials for:', email)
-        return res.redirect('/login?error=invalid_credentials')
-    }
-    
-    //Como se mantiene logeado
-    const token = generateToken(user)
-    res.cookie('currentUser', token, { 
-        httpOnly: true, 
-        signed: true, 
-        maxAge: 24 * 60 * 60 * 1000
-    })
-     console.log('Login successful for:', email)
-    res.redirect('/current')
-}
 
 export async function registerUser(req, res) {
    try{ const { first_name, last_name, age, email, password } = req.body
@@ -30,7 +9,7 @@ export async function registerUser(req, res) {
 
     const user = await User.findOne({email})
     if (user) {
-        return res.redirect('/register?error=errorregistro')
+        return res.status(400).json({error: 'El usuario ya existe'})
     }
 
     const newUser = await User.create ({ 
@@ -47,10 +26,11 @@ export async function registerUser(req, res) {
         signed: true,
         maxAge: 24 * 60 * 60 * 1000
      })
-    res.redirect('/current')
-}catch(error){
-    res.redirect('/register?error=registration_failed')
-}
+    
+    return res.redirec('/current')
+    }catch(error){
+        res.status(500).json({error: 'Fallo el registro'})
+    }
 }
 
 export async function deleteUser(req, res) {

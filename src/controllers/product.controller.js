@@ -1,34 +1,26 @@
 import Product from "../models/product.model.js";
+import { ProductService } from "../utils/product.service.js";
 
 const getAllProducts =  async (req, res) =>{
     try { 
         const { limit = 10, page = 1, sort, query } = req.query;
 
-        const filter = query
-            ?{$or:[{category: query}, {status: query === 'true' }]} : {};
-
-            const sortOption = sort === 'asc' ? {price: 1} : sort === 'desc' ? { price: -1 } : {};
-
-            const options = {
-                page: parseInt (page),
-                limit: parseInt (limit),
-                sort: sortOption,
-                lean: true
-            };
-
-            const products = await Product.paginate (filter, options);
+        const result = await ProductService.getPaginatedProducts(req.query)
+        const links = await ProductService.buildPaginationLinks(
+            result, limit, sort, query, '/api/products'
+        )
 
             res.status(200).json ({
                 status: 'success',
-                payload: products,
-                totalPages: products.totalPages,
-                prevPage: products.prevPage,
-                nextPage: products.nextPage,
-                page: products.page,
-                hasPrevPage: products.hasPrevPage,
-                hasNextPage: products.hasNextPage,
-                prevLink: products.hasPrevPage ? `?page=${products.prevPage}&limit=${limit}` : null,
-                nextLink: products.hasNextPage ? `?page=${products.nextPage}&limit=${limit}` : null,
+                payload: result.docs,
+                totalPages: result.totalPages,
+                prevPage: result.prevPage,
+                nextPage: result.nextPage,
+                page: result.page,
+                hasPrevPage: result.hasPrevPage,
+                hasNextPage: result.hasNextPage,
+                prevLink: links.prevLink,
+                nextLink: links.nextLink,
             })
 
     }catch(error){
@@ -41,7 +33,7 @@ const getProductById = async (req,res) => {
             const { id } = req.params;
             const product = await Product.findById (id).lean();
             if (!product) return res.status(404).json ({status: 'error', message: 'Producto no encontrado' });
-            res.status(200).json({status:'success', payload: {...product.toObject()}});
+            res.status(200).json({status:'success', payload: product});
         }catch(error){
             res.status(500).json({status:'error', message: error.message})
         }
