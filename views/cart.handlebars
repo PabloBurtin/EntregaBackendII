@@ -1,0 +1,41 @@
+<div class="container mt-4" data-cart-id="{{cart._id}}">
+  <h1 class="mb-4">Mi Carrito</h1>
+  
+  {{#if cart.products.length}}
+    <div class="row">
+      {{#each cart.products}}
+      {{#unless this.product.price}}
+      <div class="alert alert-warning">Precio no disponible</div>
+      {{/unless}}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <img src="{{this.product.thumbnail}}" class="card-img-top" alt="{{this.product.title}}" style="height: 180px; object-fit: cover;">
+            <div class="card-body">
+              <h5 class="card-title">{{this.product.title}}</h5>
+              <p class="card-text">${{this.product.price}} c/u</p>
+              <p class="card-text">Cantidad: {{this.quantity}}</p>
+              <p class="card-text">Total: ${{this.itemTotal}}</p>
+              <button class="btn btn-danger btn-sm remove-from-cart" data-product-id="{{this.product._id}}">
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+
+    <div class="text-end mt-4">
+      <h4>Total del carrito: ${{cart.cartTotal}}</h4>
+      <button id="emptyCartBtn" class="btn btn-warning me-2">Vaciar Carrito</button>
+      <a href="/products" class="btn btn-secondary me-2">Seguir comprando</a>
+      <button id="checkoutBtn" class="btn btn-success">Finalizar compra</button>
+    </div>
+  {{else}}
+    <div class="alert alert-info">
+      <p>Tu carrito está vacío</p>
+      <a href="/products" class="btn btn-primary">Ver productos</a>
+    </div>
+  {{/if}}
+</div>
+
+<a href="/products">Volver a productos</a>
