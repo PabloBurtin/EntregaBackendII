@@ -9,16 +9,19 @@
         <div class="links">
             <div class="product-icon">
                 <img src="" alt="">
-                <h4>Productos</h4>
+                <h4><a href="/products">Productos</a></h4>
             </div>
              <div class="cart-icon">
                 <img src="" alt="">
-                <h4>Carrito</h4>
+                <h4><a href="/carts/{{user.cartId}}">Carrito</a></h4>
             </div>
              <div class="profile-icon">
                 <img src="" alt="">
-                <h4>Mi perfil</h4>
+                <h4><a href="/profile">Mi perfil</a></h4>
             </div>
         </div>
+        <form  method="GET" action="/logout">
+            <button type="submit">Cerrar session</button>
+        </form>
     </div>
 </body>

@@ -10,7 +10,6 @@ const cookieExtractor = (req) => {
     if (req && req.signedCookies){
         token = req.signedCookies.currentUser
     }
-    console.log('Extracted token:', token)
     return token;
 }
 
@@ -19,7 +18,7 @@ const initializePassport = ()=>{
         jwtFromRequest: ExtractJWT.fromExtractors([cookieExtractor]),
         secretOrKey: process.env.JWT_SECRET
     }, async (jwt_payload, done) => {
-        console.log('JWT Payload:', jwt_payload)
+        
         try {
              const user = await User.findById(jwt_payload.id);
             if (!user) {

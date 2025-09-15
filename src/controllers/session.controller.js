@@ -27,11 +27,3 @@ export const getCurrentUser = async (req, res) => {
     const user = await User.findById(req.user._id).select('-password');
     res.status(200).json({status: 'success', user});
 }
-
-export const logoutUser = (req, res) => {
-    res.clearCookie('currentUser', {
-        httpOnly: true,
-        signed: true
-    });
-    res.status(200).json({status: 'success', message: 'Logout succesfully'});
-}

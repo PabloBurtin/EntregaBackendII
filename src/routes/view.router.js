@@ -28,7 +28,7 @@ viewsRouter.get('/login', (req, res)=>{
 //Registro
 viewsRouter.get('/register', (req, res)=>{
   if (req.signedCookies.currentUser){
-    return res.redirect('/curent')
+    return res.redirect('current')
   }
   res.render('register')
 })
@@ -52,7 +52,11 @@ viewsRouter.get('/current', passportAuth('jwt'), async (req, res)=>{
 
 //Logout
 viewsRouter.get('/logout', (req, res)=>{
-  res.render('logout')
+  res.clearCookie('currentUser', {
+        httpOnly: true,
+        signed: true
+    })
+  res.render('index')
 })
 
 //Pagina de error
@@ -68,11 +72,16 @@ viewsRouter.get('/products', async (req, res)=>{
       result, req.query.limit, req.query.sort, req.query.query, '/products'
     );
 
+    let userWithCart = null
+
+    if(req.user){
+      userWithCart = await User.findById(req.user._id).populate('cartId').lean()
+    }
     res.render('products', {
       products: result.docs,
-      user: req.user ? {
-        _id: req.user._id,
-        cartId: req.user.cartId
+      user: userWithCart ? {
+        _id: userWithCart._id,
+        cartId: userWithCart.cartId ? userWithCart.cartId._id : null
       } : null,
       totalPages: result.totalPages,
       prevPage: result.prevPage,
@@ -106,17 +115,22 @@ viewsRouter.get('/products/:pid', async (req, res) => {
 });
 
 // Carrito
-viewsRouter.get('/carts/:cid', async (req, res) => {
+viewsRouter.get('/carts/:cid', passportAuth('jwt'), async (req, res) => {
     try {
         const { cid } = req.params;
-        const cart = await Cart.findById(cid).populate({
+        
+        // Primero verificar que el carrito pertenezca al usuario
+        const cart = await Cart.findOne({ 
+            _id: cid, 
+            user: req.user._id 
+        }).populate({
             path: 'products.product',
             model: 'Product',
-            select: 'title price thumbnail'
+            select: 'title price thumbnail stock'
         }).lean();
         
         if (!cart) {
-            return res.status(404).send('El carrito no fue encontrado o no existe');
+            return res.status(404).render('error', { message: 'El carrito no fue encontrado o no tienes permisos' });
         }
 
         const validatedProducts = cart.products.map(item => {
@@ -138,10 +152,12 @@ viewsRouter.get('/carts/:cid', async (req, res) => {
             )
         };
 
+        // AQUÍ SÍ HACEMOS RENDER
         res.render('cart', { cart: cartWithTotal });
+        
     } catch(error) {
         console.error('Error loading cart:', error);
-        res.status(500).send('Error al cargar el carrito');
+        res.status(500).render('error', { message: 'Error al cargar el carrito' });
     }
 });
 

@@ -1,12 +1,23 @@
 <div class="container mt-4" data-cart-id="{{cart._id}}">
   <h1 class="mb-4">Mi Carrito</h1>
   
+  {{!-- Mostrar mensajes --}}
+  {{#if query.success}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {{query.success}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {{/if}}
+  {{#if query.error}}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{query.error}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {{/if}}
+  
   {{#if cart.products.length}}
     <div class="row">
       {{#each cart.products}}
-      {{#unless this.product.price}}
-      <div class="alert alert-warning">Precio no disponible</div>
-      {{/unless}}
         <div class="col-md-4 mb-4">
           <div class="card h-100">
             <img src="{{this.product.thumbnail}}" class="card-img-top" alt="{{this.product.title}}" style="height: 180px; object-fit: cover;">
@@ -15,9 +26,19 @@
               <p class="card-text">${{this.product.price}} c/u</p>
               <p class="card-text">Cantidad: {{this.quantity}}</p>
               <p class="card-text">Total: ${{this.itemTotal}}</p>
-              <button class="btn btn-danger btn-sm remove-from-cart" data-product-id="{{this.product._id}}">
+              
+              {{!-- Eliminar producto --}}
+              <button class="btn btn-danger btn-sm" onclick="cartManager.deleteProduct('{{../cart._id}}', '{{this.product._id}}')">
                 Eliminar
               </button>
+              
+              {{!-- Actualizar cantidad --}}
+              <div class="input-group input-group-sm mt-2">
+                <input type="number" id="quantity-{{this.product._id}}" value="{{this.quantity}}" min="1" class="form-control" style="width: 70px;">
+                <button type="button" class="btn btn-outline-primary" onclick="cartManager.updateQuantity('{{../cart._id}}', '{{this.product._id}}')">
+                  Actualizar
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -26,9 +47,19 @@
 
     <div class="text-end mt-4">
       <h4>Total del carrito: ${{cart.cartTotal}}</h4>
-      <button id="emptyCartBtn" class="btn btn-warning me-2">Vaciar Carrito</button>
+      
+      {{!-- Vaciar carrito --}}
+      <button class="btn btn-warning me-2" onclick="cartManager.emptyCart('{{cart._id}}')">
+        Vaciar Carrito
+      </button>
+      
+      {{!-- Eliminar carrito --}}
+      <button class="btn btn-danger me-2" onclick="cartManager.deleteCart('{{cart._id}}')">
+        Eliminar Carrito
+      </button>
+      
       <a href="/products" class="btn btn-secondary me-2">Seguir comprando</a>
-      <button id="checkoutBtn" class="btn btn-success">Finalizar compra</button>
+      <button class="btn btn-success">Finalizar compra</button>
     </div>
   {{else}}
     <div class="alert alert-info">
@@ -38,4 +69,7 @@
   {{/if}}
 </div>
 
-<a href="/products">Volver a productos</a>
+<a href="/products" class="btn btn-link mt-3">← Volver a productos</a>
+
+{{!-- Incluir el script externo --}}
+<script src="/js/cartManager.js"></script>

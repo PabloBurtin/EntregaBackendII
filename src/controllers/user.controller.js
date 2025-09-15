@@ -3,13 +3,13 @@ import { generateToken } from "../utils/jwt.js";
 import { createHash } from "../utils/hash.js";
 
 
-export async function registerUser(req, res) {
+export async function registerUser(req, res, next) {
    try{ const { first_name, last_name, age, email, password } = req.body
     const hashedPassword = createHash(password)
 
     const user = await User.findOne({email})
     if (user) {
-        return res.status(400).json({error: 'El usuario ya existe'})
+        return res.redirect('/register?error=errorregistro')
     }
 
     const newUser = await User.create ({ 
@@ -25,9 +25,10 @@ export async function registerUser(req, res) {
         httpOnly: true, 
         signed: true,
         maxAge: 24 * 60 * 60 * 1000
-     })
-    
-    return res.redirec('/current')
+     }) 
+    res.redirect('/current')
+    res.status(201).json ({status: 'success', message: 'Usuario creado con exito'})
+   
     }catch(error){
         res.status(500).json({error: 'Fallo el registro'})
     }

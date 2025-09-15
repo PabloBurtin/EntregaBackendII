@@ -1,43 +1,41 @@
-<div class="container mt-4" data-cart-id="{{user.cartId}}">
+<div class="container mt-4">
   <h1 class="text-center">Productos Disponibles</h1>
 
-   {{!-- AGREGAR AQUÍ EL BOTÓN DE CARRITO --}}
-  {{#if user}}
-    <div class="text-end mb-4">
-      {{#if user.cartId}}
-        <a href="/carts/{{user.cartId}}" class="btn btn-primary">
-          <i class="bi bi-cart-fill"></i> Ver Mi Carrito
-        </a>
-        <button id="emptyCartBtn" class="btn btn-warning me-2">
-          <i class="bi bi-trash"></i>Vaciar carrito
-        </button>
-        <button id="deleteCartBtn" class="btn btn-danger">
-          <i class="bi bi-x-circle"></i>Eliminar carrito
-        </button>
-      {{else}}
-        <button id="createCartBtn" class="btn btn-success">
-          <i class="bi bi-cart-plus"></i> Crear Carrito
-        </button>
-      {{/if}}
+  {{!-- Mostrar mensajes --}}
+  {{#if query.success}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {{query.success}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {{/if}}
+  {{#if query.error}}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{query.error}}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   {{/if}}
 
-  {{!-- Filtros y ordenamiento --}}
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <form class="d-flex">
-        <input type="text" name="query" class="form-control" placeholder="Buscar por categoría">
-        <button type="submit" class="btn btn-primary ms-2">Filtrar</button>
-      </form>
-    </div>
-    <div class="col-md-6 text-end">
-      <div class="btn-group">
-        <a href="/products?sort=asc" class="btn btn-outline-secondary">Precio ↑</a>
-        <a href="/products?sort=desc" class="btn btn-outline-secondary">Precio ↓</a>
-      </div>
-    </div>
+  {{#if user}}
+  <div class="text-end mb-4">
+   {{#if user.cartId}}
+  <a href="/carts/{{user.cartId}}" class="btn btn-primary">
+    <i class="bi bi-cart-fill"></i> Ver Mi Carrito
+  </a>
+  {{!-- Vaciar carrito --}}
+  <button class="btn btn-warning me-2" onclick="productManager.emptyCart('{{user.cartId}}', true)">
+    <i class="bi bi-trash"></i> Vaciar carrito
+  </button>
+  {{!-- Eliminar carrito --}}
+  <button class="btn btn-danger" onclick="productManager.deleteCart('{{user.cartId}}', true)">
+    <i class="bi bi-x-circle"></i> Eliminar carrito
+  </button>
+{{else}}
+  <button class="btn btn-success" onclick="productManager.createCart()">
+    <i class="bi bi-cart-plus"></i> Crear Carrito
+  </button>
+{{/if}}
   </div>
-
+{{/if}}
 
   {{!-- Lista de productos --}}
   <div class="row">
@@ -49,27 +47,26 @@
             <h5 class="card-title">{{this.title}}</h5>
             <p class="card-text">${{this.price}}</p>
             <p class="card-text"><small class="text-muted">{{this.category}}</small></p>
+            <p class="card-text"><small>Stock: {{this.stock}}</small></p>
 
+            {{#if user}}
             {{#if ../user.cartId}}
-            <div class="quantity-selector d-flex align-items-center gap-2 mb-2">
-              <button class="btn btn-sm btn-outline-secondary quantity-minus" data-product-id="{{this._id}}">-</button>
-              <input type="text" class="form-control form-control-sm quantity-input"
-              data-product-id="{{this._id}}"
-              value="1"
-              min="1"
-              max="{{this.stock}}"
-              style="width: 60; text-align: center;">
-              <button class="btn btn-sm btn-outline-secondary quantity-plus"
-              data-product-id="{{this._id}}">+</button>
-            </div>
-            <button class="btn btn-sm btn-primary add-to-cart" 
-                    data-product-id="{{this._id}}">
-              Agregar al Carrito
-            </button>
+              <div class="quantity-selector d-flex align-items-center gap-2 mb-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="this.parentNode.querySelector('input').stepDown()">-</button>
+                <input type="number" id="quantity-{{this._id}}" class="form-control form-control-sm" value="1" min="1" max="{{this.stock}}" style="width: 60px; text-align: center;">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="this.parentNode.querySelector('input').stepUp()">+</button>
+              </div>
+                <button type="button" class="btn btn-sm btn-primary" onclick="productManager.addToCart('{{../user.cartId}}', '{{this._id}}', '{{this._id}}')">Agregar al Carrito
+                </button>
             {{else}}
-            <button class="btn btn-sm btn-succes" onclick="createCartForPurchase()">
-              <i class="bi bi-cart-plus"></i> Crear carrito para comprar
-            </button>
+                <button type="button" class="btn btn-sm btn-success" onclick="productManager.createCart()">
+                <i class="bi bi-cart-plus"></i> Crear carrito para comprar
+                </button>
+            {{/if}}
+            {{else}}
+            <div class="alert alert-warning p-2">
+              <small>Para comprar este producto, <a href="/login">Inicia sesión</a></small>
+            </div>
             {{/if}}
           </div>
         </div>
@@ -96,3 +93,21 @@
     </ul>
   </nav>
 </div>
+
+<a href="/current" class="btn btn-primary me-2">Volver a index</a>
+
+{{#if user}}
+      <form method="GET" action="/logout" class="d-inline">
+        <button type="submit" class="btn btn-outline-danger">Cerrar sesión</button>
+      </form>
+    {{else}}
+      <div>
+        <a href="/login" class="btn btn-primary me-2">Iniciar sesión</a>
+        <a href="/register" class="btn btn-outline-primary">Registrarse</a>
+      </div>
+    {{/if}}
+  </div>
+</div>
+{{#if user}}
+<script src="/js/productManager.js"></script>
+{{/if}}
